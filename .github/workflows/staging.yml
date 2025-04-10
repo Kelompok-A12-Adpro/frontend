@@ -54,13 +54,8 @@ jobs:
       
       - name: Deploy Project Artifacts to Vercel (Preview)
         run: |
-          DEPLOY_URL=$(vercel deploy --prebuilt --token=$VERCEL_TOKEN --confirm)
-          echo "Deployed URL: $DEPLOY_URL" >> $GITHUB_STEP_SUMMARY
-          echo "::set-output name=deploy_url::$DEPLOY_URL"
-      
-      - name: Deployment Summary
-        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt --environment=preview --token=$VERCEL_TOKEN --confirm)
+          echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "Deployed URL: ${{ steps.deploy-prod.outputs.deploy_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "Vercel file usage percentage: $PERCENTAGE" >> $GITHUB_STEP_SUMMARY
+          echo "Deployed URL: $DEPLOY_URL" >> $GITHUB_STEP_SUMMARY
           echo "Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
