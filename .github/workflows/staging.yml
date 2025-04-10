@@ -28,6 +28,7 @@ jobs:
         run: npm run lint
 
   deploy-staging:
+    needs: eslint-check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
