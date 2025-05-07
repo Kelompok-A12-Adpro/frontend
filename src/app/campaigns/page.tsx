@@ -1,23 +1,23 @@
 // src/app/campaigns/page.tsx
-import React from 'react';
-import Link from 'next/link';
-import CampaignCard from '@/components/organisms/CampaignCard'; // Assuming components are in src/components
+import React from "react";
+import CampaignCard from "@/components/organisms/CampaignCard"; // Assuming components are in src/components
 
 // --- Mock Data (Replace with actual API fetch) ---
 const mockCampaigns = [
   {
-    id: '1',
-    title: 'Bantu Anak Yatim Piatu',
-    description: 'Penggalangan dana untuk mendukung kebutuhan dasar anak yatim.',
-    imageUrl: '/placeholder-image.jpg', // Replace with actual image path or URL
+    id: "1",
+    title: "Bantu Anak Yatim Piatu",
+    description:
+      "Penggalangan dana untuk mendukung kebutuhan dasar anak yatim.",
+    imageUrl: "/placeholder-image.jpg", // Replace with actual image path or URL
     goal: 10000000,
     currentAmount: 3500000,
   },
   {
-    id: '2',
-    title: 'Renovasi Masjid Al-Hidayah',
-    description: 'Ayo bantu renovasi masjid kebanggaan kita.',
-    imageUrl: '/placeholder-image.jpg',
+    id: "2",
+    title: "Renovasi Masjid Al-Hidayah",
+    description: "Ayo bantu renovasi masjid kebanggaan kita.",
+    imageUrl: "/placeholder-image.jpg",
     goal: 50000000,
     currentAmount: 12000000,
   },
