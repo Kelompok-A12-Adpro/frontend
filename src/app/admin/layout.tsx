@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "../globals.css";
 import Providers from "@/libs/tanstack-query/providers";
+import AdminNavbar from "@/components/templates/Layout/AdminNavbar";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -30,10 +31,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${plusJakarta.variable} antialiased bg-gray-50`}
-      >
+      <body className={`${plusJakarta.variable} antialiased bg-gray-50`}>
         <Providers>
+          <AdminNavbar />
           <main className="min-h-screen">{children}</main>
         </Providers>
       </body>
