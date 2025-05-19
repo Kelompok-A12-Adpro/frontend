@@ -14,9 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SkiBishop - Custom Digital Marketplace",
-  description:
-    "A comprehensive digital marketplace for ski and snowboard equipment",
+  metadataBase: new URL("https://gatherlove.vercel.app"),
+  title: "Gatherlove - Spreading Love to the World",
+  description: "A fundraising platform for gathering love and support for those in need.",
+  keywords: ["fundraising", "charity", "support", "community", "love"],
+  openGraph: {
+    title: "Gatherlove - Spreading Love to the World",
+    description: "A fundraising platform for gathering love and support for those in need.",
+    url: "https://gatherlove.vercel.app",
+    siteName: "Gatherlove",
+    type: "website",
+    locale: "en-US",
+  },
+  icons: {
+    icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>",
+  },
 };
 
 export default function RootLayout({
