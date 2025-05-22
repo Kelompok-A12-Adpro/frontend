@@ -1,31 +1,27 @@
 import api from "./api";
 
-export const login = async (email: string, password: string) => {
-  const response = await api.post("/login", { email, password });
-  localStorage.setItem("token", response.data.token);
-  return response.data;
-};
-
-export const register = async ({
-  name,
-  email,
-  password,
-  phone,
-}: {
+export const register = async (data: {
   name: string;
   email: string;
   password: string;
   phone: string;
-}) => {
-  const response = await api.post("/register", {
-    name,
-    email,
-    password,
-    phone,
-  });
-  return response.data;
+}): Promise<string> => {
+  const { data: msg } = await api.post<string>("/auth/register", data);
+  return msg;
 };
 
-export const logout = () => {
+export const login = async (
+  email: string,
+  password: string,
+): Promise<string> => {
+  const { data: token } = await api.post<string>("/auth/login", {
+    email,
+    password,
+  });
+  localStorage.setItem("token", token);
+  return token;
+};
+
+export const logout = (): void => {
   localStorage.removeItem("token");
 };

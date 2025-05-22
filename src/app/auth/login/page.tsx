@@ -90,7 +90,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="text-body"
+                  className="text-body bg-neutral-50"
                 />
               </div>
 
@@ -107,7 +107,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="text-body pr-10"
+                    className="text-body pr-10 bg-neutral-50"
                   />
                   <button
                     type="button"
@@ -145,7 +145,7 @@ export default function LoginPage() {
           <p className="text-small text-neutral-500">
             Don&rsquo;t have an account?{" "}
             <Link
-              href="/signup"
+              href="/auth/register"
               className="font-medium text-primary-400 hover:text-primary-500 transition-colors"
             >
               Sign up
