@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// Need authentication for these routes
-const PROTECTED_ROUTES = [
-    "/template"
-];
+const PUBLIC_ROUTES = ["/auth/login", "/auth/register", "/unauthorized"];
 
-const ADMIN_ROUTES = [
-    "/admin"
-];
+const PROTECTED_ROUTES = ["/template"];
+
+const ADMIN_ROUTES = ["/admin"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+    pathname.startsWith(route),
+  );
 
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
     pathname.startsWith(route),
@@ -19,11 +19,23 @@ export async function middleware(request: NextRequest) {
 
   const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
 
+  const token = request.cookies.get("token")?.value;
+
+  if (isPublicRoute) {
+    return NextResponse.next();
+  }
+
+  if (!token) {
+    const loginUrl = new URL("/auth/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname); // optional: keep track of where they tried to go
+    return NextResponse.redirect(loginUrl);
+  }
+
   if (!isProtectedRoute) {
     return NextResponse.next();
   }
 
-  const isAuthenticated = false;    // TODO: Replace with authentication logic
+  const isAuthenticated = false; // TODO: Replace with authentication logic
 
   if (!isAuthenticated) {
     return NextResponse.redirect(new URL("/login", request.url));
