@@ -14,14 +14,17 @@ export const login = async (
   email: string,
   password: string,
 ): Promise<string> => {
-  const { data: token } = await api.post<string>("/auth/login", {
-    email,
-    password,
-  });
+  const response = await api.post<string>("/auth/login", { email, password });
+  const token = response.data;
+
   localStorage.setItem("token", token);
+
+  document.cookie = `token=${token}; path=/; samesite=strict`;
+
   return token;
 };
 
-export const logout = (): void => {
+export const logout = () => {
   localStorage.removeItem("token");
+  document.cookie = "token=; path=/; max-age=0";
 };
