@@ -9,6 +9,10 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const uid = localStorage.getItem("uid");
+  if (uid) {
+    config.headers["X-User-ID"] = uid;
+  }
   return config;
 });
 
