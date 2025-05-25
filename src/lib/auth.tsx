@@ -1,4 +1,4 @@
-import api from "./api";
+import { api } from "@/libs/axios/api";
 
 export const register = async (data: {
   name: string;
