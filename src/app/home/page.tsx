@@ -88,7 +88,7 @@ const LandingPage = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/campaigns/create" passHref>
+              <Link href="/campaigns" passHref>
                 <Button className="inline-flex items-center gap-2">
                   Start a Campaign
                   <ArrowRight className="w-5 h-5" />
