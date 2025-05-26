@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Campaign, CampaignStatus } from "@/types";
+import Image from "next/image";
 
 interface CampaignCardProps {
   campaign: Campaign;
@@ -30,11 +31,12 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign }) => {
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
-      <div className="relative w-full h-48 bg-gray-200">
-        <img
+      <div className="relative w-full h-48">
+        <Image
           src={campaign.image_url || "/default-campaign-image.jpg"}
           alt={campaign.name}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
         />
       </div>
       <div className="p-4 flex flex-col flex-grow">

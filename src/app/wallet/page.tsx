@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
+import { useState } from "react";
 
 export default function WalletPage() {
   // Hardcoded user data for Ivan
@@ -12,7 +12,7 @@ export default function WalletPage() {
     email: "ivan@example.com",
     role: "donor",
     balance: 500000,
-  }
+  };
 
   // Hardcoded transaction data
   const transactions = [
@@ -47,25 +47,25 @@ export default function WalletPage() {
       timestamp: new Date(2023, 4, 25),
       status: "completed",
     },
-  ]
+  ];
 
   // State for top-up form
-  const [amount, setAmount] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState("GOPAY")
-  const [phoneNumber, setPhoneNumber] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [showTopUpForm, setShowTopUpForm] = useState(false)
-  const [activeTab, setActiveTab] = useState("wallet") // wallet, topup, transactions
-  const [successMessage, setSuccessMessage] = useState("")
+  const [amount, setAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("GOPAY");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  // const [showTopUpForm, setShowTopUpForm] = useState(false)
+  const [activeTab, setActiveTab] = useState("wallet"); // wallet, topup, transactions
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Calculate statistics
   const totalTopup = transactions
     .filter((t) => t.type === "topup" && t.status === "completed")
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const totalDonations = transactions
     .filter((t) => t.type === "donation" && t.status === "completed")
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + t.amount, 0);
 
   // Format currency
   const formatCurrency = (amount: number): string => {
@@ -74,42 +74,44 @@ export default function WalletPage() {
       currency: "IDR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   // Handle top-up form submission
   const handleTopUp = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!amount || Number.parseInt(amount) < 10000) {
-      alert("Please enter an amount of at least Rp 10,000")
-      return
+      alert("Please enter an amount of at least Rp 10,000");
+      return;
     }
 
     if (!phoneNumber || phoneNumber.length < 10) {
-      alert("Please enter a valid phone number")
-      return
+      alert("Please enter a valid phone number");
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     // Simulate API delay
     setTimeout(() => {
-      setIsLoading(false)
-      setSuccessMessage(`You have successfully topped up ${formatCurrency(Number.parseInt(amount))} to your wallet.`)
-      setAmount("")
-      setPhoneNumber("")
-      setActiveTab("wallet")
+      setIsLoading(false);
+      setSuccessMessage(
+        `You have successfully topped up ${formatCurrency(Number.parseInt(amount))} to your wallet.`,
+      );
+      setAmount("");
+      setPhoneNumber("");
+      setActiveTab("wallet");
 
       // Clear success message after 5 seconds
       setTimeout(() => {
-        setSuccessMessage("")
-      }, 5000)
-    }, 1500)
-  }
+        setSuccessMessage("");
+      }, 5000);
+    }, 1500);
+  };
 
   // Predefined amounts for top-up
-  const predefinedAmounts = [50000, 100000, 200000, 500000]
+  const predefinedAmounts = [50000, 100000, 200000, 500000];
 
   // Common styles
   const styles = {
@@ -266,13 +268,15 @@ export default function WalletPage() {
     donationAmount: {
       color: "#dc2626",
     },
-  }
+  };
 
   return (
     <div style={{ background: "#ffffff", minHeight: "100vh", width: "100%" }}>
       <div style={styles.container}>
         {/* Success message */}
-        {successMessage && <div style={styles.successMessage}>{successMessage}</div>}
+        {successMessage && (
+          <div style={styles.successMessage}>{successMessage}</div>
+        )}
 
         {/* Header */}
         <div>
@@ -317,7 +321,9 @@ export default function WalletPage() {
             <div style={styles.grid}>
               <div style={styles.card}>
                 <div style={styles.cardTitle}>Current Balance</div>
-                <div style={styles.cardValue}>{formatCurrency(user.balance)}</div>
+                <div style={styles.cardValue}>
+                  {formatCurrency(user.balance)}
+                </div>
                 <div style={styles.cardSubtext}>Available for donations</div>
               </div>
 
@@ -329,45 +335,71 @@ export default function WalletPage() {
 
               <div style={styles.card}>
                 <div style={styles.cardTitle}>Total Donations</div>
-                <div style={styles.cardValue}>{formatCurrency(totalDonations)}</div>
+                <div style={styles.cardValue}>
+                  {formatCurrency(totalDonations)}
+                </div>
                 <div style={styles.cardSubtext}>All time</div>
               </div>
             </div>
 
             <div style={styles.flexRow}>
-              <button style={styles.button} onClick={() => setActiveTab("topup")}>
+              <button
+                style={styles.button}
+                onClick={() => setActiveTab("topup")}
+              >
                 Top Up Wallet
               </button>
-              <button style={styles.outlineButton} onClick={() => setActiveTab("transactions")}>
+              <button
+                style={styles.outlineButton}
+                onClick={() => setActiveTab("transactions")}
+              >
                 View Transactions
               </button>
             </div>
 
             {/* Recent Transactions */}
             <div style={{ marginTop: "32px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>Recent Transactions</h2>
+              <h2
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  marginBottom: "16px",
+                }}
+              >
+                Recent Transactions
+              </h2>
               <div style={styles.card}>
                 {transactions.slice(0, 3).map((transaction) => (
                   <div key={transaction.id} style={styles.transactionItem}>
                     <div>
-                      <div style={styles.transactionType}>{transaction.type}</div>
-                      <div style={styles.transactionMeta}>
-                        {transaction.paymentMethod && `via ${transaction.paymentMethod}`}
-                        {transaction.campaignTitle && `to ${transaction.campaignTitle}`}
+                      <div style={styles.transactionType}>
+                        {transaction.type}
                       </div>
-                      <div style={styles.transactionMeta}>{transaction.timestamp.toLocaleDateString()}</div>
+                      <div style={styles.transactionMeta}>
+                        {transaction.paymentMethod &&
+                          `via ${transaction.paymentMethod}`}
+                        {transaction.campaignTitle &&
+                          `to ${transaction.campaignTitle}`}
+                      </div>
+                      <div style={styles.transactionMeta}>
+                        {transaction.timestamp.toLocaleDateString()}
+                      </div>
                     </div>
                     <div>
                       <div
                         style={{
                           ...styles.transactionAmount,
-                          ...(transaction.type === "topup" ? styles.topupAmount : styles.donationAmount),
+                          ...(transaction.type === "topup"
+                            ? styles.topupAmount
+                            : styles.donationAmount),
                         }}
                       >
                         {transaction.type === "topup" ? "+" : "-"}
                         {formatCurrency(transaction.amount)}
                       </div>
-                      <div style={styles.transactionMeta}>{transaction.status}</div>
+                      <div style={styles.transactionMeta}>
+                        {transaction.status}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -379,8 +411,20 @@ export default function WalletPage() {
         {/* Top Up Tab */}
         {activeTab === "topup" && (
           <div style={styles.card}>
-            <h2 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>Top Up</h2>
-            <p style={{ fontSize: "14px", color: "#666", marginBottom: "24px" }}>Choose an amount and payment method</p>
+            <h2
+              style={{
+                fontSize: "18px",
+                fontWeight: "bold",
+                marginBottom: "16px",
+              }}
+            >
+              Top Up
+            </h2>
+            <p
+              style={{ fontSize: "14px", color: "#666", marginBottom: "24px" }}
+            >
+              Choose an amount and payment method
+            </p>
 
             <form onSubmit={handleTopUp}>
               <div style={styles.formGroup}>
@@ -398,7 +442,14 @@ export default function WalletPage() {
                   style={styles.input}
                 />
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "8px" }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px",
+                    marginTop: "8px",
+                  }}
+                >
                   {predefinedAmounts.map((value) => (
                     <button
                       key={value}
@@ -406,7 +457,10 @@ export default function WalletPage() {
                       onClick={() => setAmount(value.toString())}
                       style={{
                         padding: "8px",
-                        border: amount === value.toString() ? "1px solid #3b82f6" : "1px solid #e5e7eb",
+                        border:
+                          amount === value.toString()
+                            ? "1px solid #3b82f6"
+                            : "1px solid #e5e7eb",
                         borderRadius: "6px",
                         background: "white",
                         cursor: "pointer",
@@ -461,8 +515,11 @@ export default function WalletPage() {
                   required
                   style={styles.input}
                 />
-                <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-                  Enter the phone number associated with your {paymentMethod} account
+                <p
+                  style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}
+                >
+                  Enter the phone number associated with your {paymentMethod}{" "}
+                  account
                 </p>
               </div>
 
@@ -475,7 +532,9 @@ export default function WalletPage() {
                   opacity: isLoading ? 0.7 : 1,
                 }}
               >
-                {isLoading ? "Processing..." : `Top Up ${amount ? formatCurrency(Number.parseInt(amount)) : ""}`}
+                {isLoading
+                  ? "Processing..."
+                  : `Top Up ${amount ? formatCurrency(Number.parseInt(amount)) : ""}`}
               </button>
             </form>
           </div>
@@ -489,25 +548,38 @@ export default function WalletPage() {
                 transactions.map((transaction) => (
                   <div key={transaction.id} style={styles.transactionItem}>
                     <div>
-                      <div style={styles.transactionType}>{transaction.type}</div>
+                      <div style={styles.transactionType}>
+                        {transaction.type}
+                      </div>
                       <div style={styles.transactionMeta}>
-                        {transaction.paymentMethod && `via ${transaction.paymentMethod}`}
-                        {transaction.campaignTitle && `to ${transaction.campaignTitle}`}
+                        {transaction.paymentMethod &&
+                          `via ${transaction.paymentMethod}`}
+                        {transaction.campaignTitle &&
+                          `to ${transaction.campaignTitle}`}
                       </div>
                       {transaction.message && (
-                        <div style={{ fontSize: "13px", fontStyle: "italic", marginTop: "4px" }}>
-                          "{transaction.message}"
+                        <div
+                          style={{
+                            fontSize: "13px",
+                            fontStyle: "italic",
+                            marginTop: "4px",
+                          }}
+                        >
+                          <q>{transaction.message}</q>
                         </div>
                       )}
                       <div style={styles.transactionMeta}>
-                        {transaction.timestamp.toLocaleDateString()} at {transaction.timestamp.toLocaleTimeString()}
+                        {transaction.timestamp.toLocaleDateString()} at{" "}
+                        {transaction.timestamp.toLocaleTimeString()}
                       </div>
                     </div>
                     <div>
                       <div
                         style={{
                           ...styles.transactionAmount,
-                          ...(transaction.type === "topup" ? styles.topupAmount : styles.donationAmount),
+                          ...(transaction.type === "topup"
+                            ? styles.topupAmount
+                            : styles.donationAmount),
                         }}
                       >
                         {transaction.type === "topup" ? "+" : "-"}
@@ -530,12 +602,20 @@ export default function WalletPage() {
                   </div>
                 ))
               ) : (
-                <div style={{ textAlign: "center", padding: "24px", color: "#666" }}>No transactions found</div>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "24px",
+                    color: "#666",
+                  }}
+                >
+                  No transactions found
+                </div>
               )}
             </div>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
