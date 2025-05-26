@@ -35,7 +35,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push("/campaigns");
+      router.push("/home");
     } catch {
       setError("Invalid email or password. Please try again.");
     } finally {
