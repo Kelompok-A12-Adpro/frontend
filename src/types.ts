@@ -30,3 +30,10 @@ export interface CreateCampaignRequest {
   end_date: string;
   image_url?: string;
 }
+export interface UpdateCampaignRequest {
+  name?: string;
+  description?: string;
+  target_amount?: number;
+  end_date?: string;
+  image_url?: string;
+}
