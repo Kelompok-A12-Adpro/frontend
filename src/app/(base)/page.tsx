@@ -4,7 +4,7 @@ import {
   QueryClient,
   dehydrate,
 } from "@tanstack/react-query";
-import BasicPage from "@/components/pages/basic/page";
+import LandingPage from "@/components/pages/home/page";
 
 export default async function Home() {
   const queryClient = new QueryClient({
@@ -13,7 +13,7 @@ export default async function Home() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <BasicPage />
+      <LandingPage />
     </HydrationBoundary>
   );
 }

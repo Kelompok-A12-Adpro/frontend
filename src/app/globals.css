@@ -1,26 +1,149 @@
-@import "tailwindcss";
+/* globals.css */
+@import 'tailwindcss';
 
+/* ─── IMPORT FONT ─── */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;700&display=swap');
+
+/* ─── DESIGN TOKENS ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary (Persian Pink) */
+  --color-primary-50:  #fef1f8;
+  --color-primary-100: #fde6f3;
+  --color-primary-200: #fecce7;
+  --color-primary-300: #fea3d3;
+  --color-primary-400: #fc79bc;
+  --color-primary-500: #f63e97;
+  --color-primary-600: #e61c74;
+  --color-primary-700: #c80e59;
+  --color-primary-800: #a50f49;
+  --color-primary-900: #891241;
+  --color-primary-950: #540322;
+
+  /* Secondary (Moon Raker) */
+  --color-secondary-50:  #f7f3ff;
+  --color-secondary-100: #f0e9fe;
+  --color-secondary-200: #e6dafe;
+  --color-secondary-300: #cfb5fd;
+  --color-secondary-400: #b98bfa;
+  --color-secondary-500: #a35cf6;
+  --color-secondary-600: #983aed;
+  --color-secondary-700: #8928d9;
+  --color-secondary-800: #7321b6;
+  --color-secondary-900: #5f1d95;
+  --color-secondary-950: #3b1065;
+
+  /* Neutrals */
+  --color-neutral-50:  #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+
+  /* Semantic */
+  --color-success: #10b981;
+  --color-error:   #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Typography Scale */
+  --font-size-h1:        2.5rem;
+  --font-size-h2:        2rem;
+  --font-size-h3:        1.75rem;
+  --font-size-h4:        1.5rem;
+  --font-size-h5:        1.25rem;
+  --font-size-h6:        1rem;
+  --font-size-sub1:      1.125rem;
+  --font-size-sub2:      1rem;
+  --font-size-base:      1rem;
+  --font-size-sm:        0.875rem;
+
+  /* Fonts */
+  --font-sans: 'Instrument Sans', sans-serif;
+  --font-mono: 'Instrument Sans', monospace;
+
+  /* Background & Foreground */
+  --color-background: var(--color-neutral-50);
+  --color-foreground: var(--color-neutral-900);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ─── BASE STYLES ─── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
+
+/* Headings */
+h1 { font-size: var(--font-size-h1); }
+h2 { font-size: var(--font-size-h2); }
+h3 { font-size: var(--font-size-h3); }
+h4 { font-size: var(--font-size-h4); }
+h5 { font-size: var(--font-size-h5); }
+h6 { font-size: var(--font-size-h6); }
+
+/* Subtitles & Text */
+.subtitle-1 { font-size: var(--font-size-sub1); }
+.subtitle-2 { font-size: var(--font-size-sub2); }
+p          { font-size: var(--font-size-base); }
+.small      { font-size: var(--font-size-sm); }
+
+/* Code & Pre */
+code, pre {
+  font-family: var(--font-mono);
+}
+
+/* ─── UTILITY CLASSES FOR COLORS ─── */
+/* Primary */
+.bg-primary-50  { background-color: var(--color-primary-50); }
+.bg-primary-100 { background-color: var(--color-primary-100); }
+.bg-primary-200 { background-color: var(--color-primary-200); }
+.bg-primary-300 { background-color: var(--color-primary-300); }
+.bg-primary-400 { background-color: var(--color-primary-400); }
+.bg-primary-500 { background-color: var(--color-primary-500); }
+.bg-primary-600 { background-color: var(--color-primary-600); }
+.bg-primary-700 { background-color: var(--color-primary-700); }
+.bg-primary-800 { background-color: var(--color-primary-800); }
+.bg-primary-900 { background-color: var(--color-primary-900); }
+.bg-primary-950 { background-color: var(--color-primary-950); }
+.text-primary-400 { color: var(--color-primary-400); }
+
+/* Secondary */
+.bg-secondary-50  { background-color: var(--color-secondary-50); }
+.bg-secondary-100 { background-color: var(--color-secondary-100); }
+.bg-secondary-200 { background-color: var(--color-secondary-200); }
+.bg-secondary-300 { background-color: var(--color-secondary-300); }
+.bg-secondary-400 { background-color: var(--color-secondary-400); }
+.bg-secondary-500 { background-color: var(--color-secondary-500); }
+.bg-secondary-600 { background-color: var(--color-secondary-600); }
+.bg-secondary-700 { background-color: var(--color-secondary-700); }
+.bg-secondary-800 { background-color: var(--color-secondary-800); }
+.bg-secondary-900 { background-color: var(--color-secondary-900); }
+.bg-secondary-950 { background-color: var(--color-secondary-950); }
+.text-secondary-400 { color: var(--color-secondary-400); }
+
+/* Neutrals */
+.bg-neutral-50  { background-color: var(--color-neutral-50); }
+.bg-neutral-100 { background-color: var(--color-neutral-100); }
+.bg-neutral-200 { background-color: var(--color-neutral-200); }
+.bg-neutral-300 { background-color: var(--color-neutral-300); }
+.bg-neutral-400 { background-color: var(--color-neutral-400); }
+.bg-neutral-500 { background-color: var(--color-neutral-500); }
+.bg-neutral-600 { background-color: var(--color-neutral-600); }
+.bg-neutral-700 { background-color: var(--color-neutral-700); }
+.bg-neutral-800 { background-color: var(--color-neutral-800); }
+.bg-neutral-900 { background-color: var(--color-neutral-900); }
+.text-neutral-900 { color: var(--color-neutral-900); }
+
+/* Semantic */
+.bg-success { background-color: var(--color-success); }
+.bg-error   { background-color: var(--color-error); }
+.bg-warning { background-color: var(--color-warning); }
+.text-success { color: var(--color-success); }
+.text-error   { color: var(--color-error); }
+.text-warning { color: var(--color-warning); }
