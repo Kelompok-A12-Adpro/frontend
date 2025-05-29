@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import {
   ArrowLeft,
   Calendar,
@@ -16,16 +16,9 @@ import DonationForm from "@/components/organisms/DonationForm";
 import { serviceApi } from "@/libs/axios/api";
 import type { Campaign } from "@/types";
 
-interface CampaignDetailPageProps {
-  params: {
-    campaignId: string;
-  };
-}
-
-export default function CampaignDetailPage({
-  params,
-}: CampaignDetailPageProps) {
-  const { campaignId } = params;
+export default function CampaignDetailPage() {
+  const params = useParams<{ campaignId: string }>();
+  const campaignId = params.campaignId as string;
   const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

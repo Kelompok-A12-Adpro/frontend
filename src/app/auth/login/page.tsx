@@ -35,8 +35,9 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push("/home");
-    } catch {
+      router.push("/");
+    } catch (error) {
+      console.error("Login error:", error);
       setError("Invalid email or password. Please try again.");
     } finally {
       setIsLoading(false);

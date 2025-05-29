@@ -7,7 +7,8 @@ interface DecodedToken {
   exp?: number;
 }
 
-const PUBLIC_ROUTES = ["/auth/login", "/auth/register", "/unauthorized"];
+const AUTH_ROUTES = ["/auth/login", "/auth/register"];
+const PUBLIC_ROUTES = ["/unauthorized", ...AUTH_ROUTES];
 const ADMIN_ROUTES = ["/admin"];
 
 export async function middleware(request: NextRequest) {
@@ -17,9 +18,10 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
     pathname.startsWith(route),
   );
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
   const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
 
-  if (isPublicRoute) {
+  if (isPublicRoute && !token) {
     return NextResponse.next();
   }
 
@@ -39,6 +41,11 @@ export async function middleware(request: NextRequest) {
 
   if (isAdminRoute && decoded.role !== "admin") {
     return NextResponse.redirect(new URL("/unauthorized", request.url));
+  }
+
+  // Logged-in users should not access auth routes
+  if (isAuthRoute && decoded) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
