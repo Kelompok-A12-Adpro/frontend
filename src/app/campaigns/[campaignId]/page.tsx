@@ -12,9 +12,24 @@ import {
   Users,
 } from "lucide-react";
 import Navbar from "@/components/organisms/Navbar";
-import DonationForm from "@/components/organisms/DonationForm";
+import DonationForm from "@/components/organisms/DonationForm"; // Assuming this component will be updated
 import { serviceApi } from "@/libs/axios/api";
-import type { Campaign } from "@/types";
+import type { Campaign } from "@/types"; // Assuming Donation type might be useful too from backend
+import axios from "axios";
+
+// Place this near your other interfaces or at the top-level of the file
+interface ApiErrorPayload {
+  message: string;
+  // Add other potential error fields from your backend if any
+  // e.g., details?: string[]; code?: string;
+}
+
+// Define the structure for the donation request payload (matches backend's NewDonationRequest)
+interface NewDonationPayload {
+  campaign_id: number;
+  amount: number;
+  message: string;
+}
 
 export default function CampaignDetailPage() {
   const params = useParams<{ campaignId: string }>();
@@ -23,54 +38,135 @@ export default function CampaignDetailPage() {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [donationSubmitting, setDonationSubmitting] = useState<boolean>(false); // For donation loading state
+  const [donationError, setDonationError] = useState<string>(""); // Specific error for donation form
+  const [donationSuccess, setDonationSuccess] = useState<string>(""); // Success message for donation
 
-  // Fetch campaign details
   const fetchCampaignDetail = useCallback(
-    async (id: string) => {
+    async (id: string, showLoading: boolean = true) => {
       try {
+        if (showLoading) setLoading(true);
+        setError("");
         const token = localStorage.getItem("token");
         if (!token) {
           router.push("/login");
-          return;
+          return null;
         }
 
         const response = await serviceApi.get(`/campaigns/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         return response.data as Campaign;
-      } catch (error) {
-        throw error;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load campaign";
+        setError(errorMessage); // Set main page error
+        return null;
+      } finally {
+        if (showLoading) setLoading(false);
       }
     },
     [router],
   );
 
-  useEffect(() => {
-    const loadCampaign = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const campaignData = await fetchCampaignDetail(campaignId);
-        setCampaign(campaignData || null);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load campaign";
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
+  const loadCampaign = useCallback(
+    async (showLoading: boolean = true) => {
+      const campaignData = await fetchCampaignDetail(campaignId, showLoading);
+      if (campaignData) {
+        setCampaign(campaignData);
       }
-    };
+    },
+    [campaignId, fetchCampaignDetail],
+  );
 
+  useEffect(() => {
     loadCampaign();
-  }, [campaignId, fetchCampaignDetail]);
+  }, [loadCampaign]); // campaignId and fetchCampaignDetail are deps of loadCampaign
 
-  const handleDonateSubmit = async (amount: number) => {
-    // TODO: Implement actual donation API call
-    alert(`Donasi berhasil: Rp ${amount.toLocaleString("id-ID")}`);
+  const handleDonateSubmit = async (amount: number, message: string) => {
+    // ADDED: message parameter
+    setDonationSubmitting(true);
+    setDonationError("");
+    setDonationSuccess("");
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setDonationError("Sesi Anda telah berakhir. Silakan login kembali.");
+        router.push("/login"); // Redirect to login
+        return;
+      }
+
+      const payload: NewDonationPayload = {
+        campaign_id: parseInt(campaignId, 10), // Ensure campaignId is a number
+        amount: amount,
+        message: message,
+      };
+
+      // Make the API call
+      const response = await serviceApi.post(
+        "/api/donation/donations",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // Important for Rocket to parse Json
+          },
+        },
+      );
+
+      if (response.status === 201) {
+        // HTTP 201 Created
+        setDonationSuccess(
+          `Donasi sebesar Rp ${amount.toLocaleString("id-ID")} berhasil! Terima kasih.`,
+        );
+        // Optionally, refresh campaign data to show updated collected_amount
+        // This will re-fetch and update the campaign state
+        await loadCampaign(false); // Pass false to avoid full page loading indicator
+        // You might want to clear the form in DonationForm component after success
+      } else {
+        // Handle other non-201 success statuses if any, or treat as error
+        setDonationError(
+          `Donasi gagal. Server merespons dengan status: ${response.status}`,
+        );
+      }
+    } catch (err: unknown) {
+      // ... inside your handleDonateSubmit function
+      // 1. Change 'any' to 'unknown'
+      let errorMessage = "Gagal melakukan donasi. Silakan coba lagi.";
+
+      // 2. Use axios.isAxiosError as a type guard
+      if (axios.isAxiosError<ApiErrorPayload>(err)) {
+        // err is now safely typed as AxiosError<ApiErrorPayload>
+        if (
+          err.response &&
+          err.response.data &&
+          typeof err.response.data.message === "string"
+        ) {
+          errorMessage = err.response.data.message;
+        } else if (err.message) {
+          // Fallback to AxiosError's own message (e.g., for network errors where err.response might be undefined)
+          errorMessage = err.message;
+        }
+        // If neither, the default "Gagal melakukan donasi..." will be used.
+      } else if (err instanceof Error) {
+        // Handle generic JavaScript errors that are not Axios errors
+        errorMessage = err.message;
+      } else if (typeof err === "string") {
+        // Handle cases where a string might have been thrown
+        errorMessage = err;
+      }
+      // For any other type of thrown value, the default errorMessage remains.
+
+      setDonationError(errorMessage);
+    } finally {
+      setDonationSubmitting(false);
+    }
   };
 
   // Get status styling
   const getStatusStyle = (status: string) => {
+    // ... (your existing code)
     switch (status) {
       case "Active":
         return "bg-emerald-100 text-emerald-800 border border-emerald-200";
@@ -86,6 +182,7 @@ export default function CampaignDetailPage() {
   };
 
   const getStatusText = (status: string) => {
+    // ... (your existing code)
     switch (status) {
       case "Active":
         return "Aktif";
@@ -101,6 +198,7 @@ export default function CampaignDetailPage() {
   };
 
   if (loading) {
+    // ... (your existing loading UI)
     return (
       <>
         <Navbar />
@@ -120,6 +218,7 @@ export default function CampaignDetailPage() {
   }
 
   if (error) {
+    // ... (your existing error UI)
     return (
       <>
         <Navbar />
@@ -150,6 +249,7 @@ export default function CampaignDetailPage() {
   }
 
   if (!campaign) {
+    // ... (your existing no campaign UI)
     return (
       <>
         <Navbar />
@@ -181,7 +281,6 @@ export default function CampaignDetailPage() {
     );
   }
 
-  // Calculate progress percentage
   const progress = (campaign.collected_amount / campaign.target_amount) * 100;
 
   return (
@@ -192,6 +291,7 @@ export default function CampaignDetailPage() {
         style={{ backgroundImage: "url('/Background.jpg')" }}
       >
         {/* Hero Section */}
+        {/* ... (your existing hero section) ... */}
         <div className="bg-gradient-to-r from-primary-500/90 to-secondary-500/90 backdrop-blur-sm text-black">
           <div className="container mx-auto px-4 py-8">
             <button
@@ -242,6 +342,7 @@ export default function CampaignDetailPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Image & Description */}
+            {/* ... (your existing left column) ... */}
             <div className="lg:col-span-2 space-y-6">
               {/* Campaign Image */}
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -351,6 +452,7 @@ export default function CampaignDetailPage() {
               <div className="sticky top-8">
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                   {/* Progress Header */}
+                  {/* ... (your existing progress header) ... */}
                   <div className="bg-gradient-to-r from-primary-500 to-secondary-500 p-6 text-white">
                     <div className="flex items-center space-x-3 mb-4">
                       <TrendingUp className="w-6 h-6" />
@@ -373,6 +475,7 @@ export default function CampaignDetailPage() {
                   </div>
 
                   {/* Progress Bar */}
+                  {/* ... (your existing progress bar) ... */}
                   <div className="p-6 border-b border-neutral-100">
                     <div className="relative w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
                       <div
@@ -389,6 +492,7 @@ export default function CampaignDetailPage() {
                       </span>
                       <span className="flex items-center space-x-1 text-primary-600 font-medium">
                         <Users className="w-4 h-4" />
+                        {/* TODO: You might want to display actual donor count if available */}
                         <span>Donatur</span>
                       </span>
                     </div>
@@ -402,12 +506,27 @@ export default function CampaignDetailPage() {
                           <Heart className="w-5 h-5 text-primary-500" />
                           <span>Donasi Sekarang</span>
                         </h3>
+                        {/* ADDED: Pass new props to DonationForm */}
                         <DonationForm
                           campaignId={campaign.id.toString()}
                           onSubmit={handleDonateSubmit}
+                          isSubmitting={donationSubmitting} // Pass submitting state
+                          // You might want to add a prop to DonationForm to clear its fields on success
                         />
+                        {/* ADDED: Display donation error/success messages */}
+                        {donationError && (
+                          <p className="mt-3 text-sm text-rose-600 bg-rose-50 p-3 rounded-lg">
+                            {donationError}
+                          </p>
+                        )}
+                        {donationSuccess && (
+                          <p className="mt-3 text-sm text-emerald-600 bg-emerald-50 p-3 rounded-lg">
+                            {donationSuccess}
+                          </p>
+                        )}
                       </>
                     ) : (
+                      // ... (your existing non-active campaign status display)
                       <div className="text-center p-6 bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-xl">
                         <div className="w-12 h-12 bg-neutral-200 rounded-xl flex items-center justify-center mx-auto mb-4">
                           <Heart className="w-6 h-6 text-neutral-500" />
