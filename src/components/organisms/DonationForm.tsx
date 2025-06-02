@@ -3,33 +3,37 @@
 import React, { useState } from "react";
 
 interface DonationFormProps {
-  campaignId: string; // Needed if form submission logic depends on it here
-  onSubmit: (amount: number, message: string | null) => void;
+  campaignId: string;
+  onSubmit: (amount: number, message: string) => void; // MODIFIED: message is now string
+  isSubmitting?: boolean; // ADDED: for disabling the button
 }
 
 const DonationForm: React.FC<DonationFormProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   campaignId,
   onSubmit,
+  isSubmitting, // ADDED
 }) => {
   const [amount, setAmount] = useState<number | "">("");
   const [message, setMessage] = useState<string>("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
-    // Basic validation
     if (amount === "" || amount <= 0) {
       alert("Masukkan jumlah donasi yang valid.");
       return;
     }
 
-    // Call the onSubmit prop passed from the parent page
-    onSubmit(Number(amount), message.trim() || null); // Pass null if message is empty
+    // MODIFIED: Pass message.trim() which will be a string (empty if no message)
+    onSubmit(Number(amount), message.trim());
 
-    // Optionally clear the form after submission
-    // setAmount('');
-    // setMessage('');
+    // Optionally clear the form after submission - consider if the parent should control this
+    // For now, let's keep it, but if donation fails, user might want data to persist.
+    // A better approach might be to clear only on successful submission,
+    // which would require more state from the parent or a callback.
+    setAmount("");
+    setMessage("");
   };
 
   return (
@@ -51,8 +55,9 @@ const DonationForm: React.FC<DonationFormProps> = ({
           }
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           placeholder="contoh: 50000"
-          min="1000" // Example minimum donation
+          min="1000"
           required
+          disabled={isSubmitting} // ADDED
         />
       </div>
       <div>
@@ -70,13 +75,16 @@ const DonationForm: React.FC<DonationFormProps> = ({
           onChange={(e) => setMessage(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           placeholder="Semoga cepat sembuh 🙏🏽"
+          disabled={isSubmitting} // ADDED
         />
       </div>
       <button
         type="submit"
-        className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+        className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" // ADDED: disabled styles
+        disabled={isSubmitting} // ADDED
       >
-        Donasi Sekarang
+        {isSubmitting ? "Memproses..." : "Donasi Sekarang"}{" "}
+        {/* ADDED: loading text */}
       </button>
     </form>
   );
