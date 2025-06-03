@@ -16,6 +16,19 @@ import DonationForm from "@/components/organisms/DonationForm"; // Assuming this
 import { serviceApi } from "@/libs/axios/api";
 import type { Campaign } from "@/types"; // Assuming Donation type might be useful too from backend
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+
+// START of new code addition
+// Define or import your Donation type
+interface Donation {
+  id: number;
+  user_id: number;
+  donator_name?: string; // Optional: if backend can provide, otherwise we use user_id
+  campaign_id: number;
+  amount: number;
+  message?: string | null;
+  created_at: string; // DateTime<Utc> from backend usually serializes to string
+}
 
 // Place this near your other interfaces or at the top-level of the file
 interface ApiErrorPayload {
@@ -41,6 +54,51 @@ export default function CampaignDetailPage() {
   const [donationSubmitting, setDonationSubmitting] = useState<boolean>(false); // For donation loading state
   const [donationError, setDonationError] = useState<string>(""); // Specific error for donation form
   const [donationSuccess, setDonationSuccess] = useState<string>(""); // Success message for donation
+
+  // START of new code addition
+  // New state for donation history
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [donationsLoading, setDonationsLoading] = useState<boolean>(false);
+  const [donationsError, setDonationsError] = useState<string>("");
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null); // For checking ownership
+
+  // Simulate fetching current user ID (e.g., from decoded token or user context)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        // Decode the JWT token
+        const decodedToken: {
+          sub: number;
+          exp: number;
+          email: string;
+          is_admin: boolean;
+        } = jwtDecode(token);
+
+        // The user ID is in the 'sub' claim
+        if (decodedToken && typeof decodedToken.sub === "number") {
+          setCurrentUserId(decodedToken.sub);
+          console.log(
+            "Successfully decoded token. Current User ID (sub):",
+            decodedToken.sub,
+          ); // DEBUG
+        } else {
+          console.warn(
+            "Decoded token does not have a numeric 'sub' claim or token is invalid.",
+          );
+          setCurrentUserId(null);
+        }
+      } catch (e) {
+        console.error("Error decoding JWT token:", e);
+        setCurrentUserId(null);
+      }
+    } else {
+      console.warn(
+        "No token found in localStorage. currentUserId will be null.",
+      );
+      setCurrentUserId(null);
+    }
+  }, []);
 
   const fetchCampaignDetail = useCallback(
     async (id: string, showLoading: boolean = true) => {
@@ -69,14 +127,49 @@ export default function CampaignDetailPage() {
     [router],
   );
 
+  // START of new code addition
+  // New function to fetch donations for the campaign
+  const fetchDonationsForCampaign = useCallback(async (cId: string) => {
+    setDonationsLoading(true);
+    setDonationsError("");
+    try {
+      const token = localStorage.getItem("token");
+      // No auth needed for this specific endpoint based on backend controller
+      // but if it were, you'd include the token in headers
+      const response = await serviceApi.get(
+        // Ensure this path matches your Rocket routes for campaign donations
+        // Based on your controller: /campaigns/<campaign_id>/donations
+        // Assuming serviceApi prepends /api/donation or similar if needed
+        `/api/donation/campaigns/${cId}/donations`,
+        {
+          headers: { Authorization: `Bearer ${token}` }, // Add if endpoint is protected
+        },
+      );
+      setDonations(response.data as Donation[]);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load donations";
+      setDonationsError(errorMessage);
+    } finally {
+      setDonationsLoading(false);
+    }
+  }, []);
+  // END of new code addition
+
   const loadCampaign = useCallback(
     async (showLoading: boolean = true) => {
       const campaignData = await fetchCampaignDetail(campaignId, showLoading);
       if (campaignData) {
         setCampaign(campaignData);
+        // START of modified/added line
+        // Fetch donations after campaign data is loaded
+        await fetchDonationsForCampaign(campaignId);
+        // END of modified/added line
       }
     },
-    [campaignId, fetchCampaignDetail],
+    // START of modified line (dependencies array)
+    [campaignId, fetchCampaignDetail, fetchDonationsForCampaign], // Added fetchDonationsForCampaign
+    // END of modified line (dependencies array)
   );
 
   useEffect(() => {
@@ -123,6 +216,7 @@ export default function CampaignDetailPage() {
         // Optionally, refresh campaign data to show updated collected_amount
         // This will re-fetch and update the campaign state
         await loadCampaign(false); // Pass false to avoid full page loading indicator
+        await fetchDonationsForCampaign(campaignId);
         // You might want to clear the form in DonationForm component after success
       } else {
         // Handle other non-201 success statuses if any, or treat as error
@@ -161,6 +255,52 @@ export default function CampaignDetailPage() {
       setDonationError(errorMessage);
     } finally {
       setDonationSubmitting(false);
+    }
+  };
+
+  const handleDeleteDonationMessage = async (donationId: number) => {
+    const token = localStorage.getItem("token");
+    if (!token || !currentUserId) {
+      alert("Anda harus login untuk menghapus pesan.");
+      return;
+    }
+
+    if (
+      !window.confirm("Apakah Anda yakin ingin menghapus pesan donasi ini?")
+    ) {
+      return;
+    }
+
+    try {
+      await serviceApi.delete(`/api/donation/donations/${donationId}/message`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setDonations((prevDonations) =>
+        prevDonations.map((d) =>
+          d.id === donationId ? { ...d, message: null } : d,
+        ),
+      );
+      alert("Pesan donasi berhasil dihapus.");
+    } catch (err) {
+      let errorMessage = "Gagal menghapus pesan donasi.";
+      if (axios.isAxiosError<ApiErrorPayload>(err)) {
+        if (
+          err.response &&
+          err.response.data &&
+          typeof err.response.data.message === "string"
+        ) {
+          errorMessage = err.response.data.message;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      alert(errorMessage);
+      console.error("Error deleting donation message:", err);
     }
   };
 
@@ -446,6 +586,88 @@ export default function CampaignDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* START of new code addition: Donation History Section */}
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h3 className="text-2xl font-bold text-neutral-800 mb-6 flex items-center space-x-3">
+                <span>Riwayat Donasi</span>
+              </h3>
+              {donationsLoading && (
+                <div className="text-center py-4">
+                  <div className="w-8 h-8 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto"></div>
+                  <p className="text-neutral-500 mt-2">Memuat donasi...</p>
+                </div>
+              )}
+              {donationsError && (
+                <p className="text-rose-600 bg-rose-50 p-3 rounded-lg">
+                  Gagal memuat riwayat donasi: {donationsError}
+                </p>
+              )}
+              {!donationsLoading &&
+                !donationsError &&
+                donations.length === 0 && (
+                  <p className="text-neutral-500 text-center py-4">
+                    Belum ada donasi untuk kampanye ini. Jadilah yang pertama!
+                  </p>
+                )}
+              {!donationsLoading && !donationsError && donations.length > 0 && (
+                <div className="space-y-4">
+                  {donations.map((donation) => (
+                    <div
+                      key={donation.id}
+                      className="bg-neutral-50 p-4 rounded-xl border border-neutral-200"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-semibold text-neutral-700">
+                          User ID: {donation.user_id}
+                        </span>
+                        <span className="font-bold text-emerald-600">
+                          Rp {donation.amount.toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                      {donation.message && (
+                        <div className="flex justify-between items-start">
+                          <p className="text-neutral-600 text-sm whitespace-pre-wrap flex-grow pr-2">
+                            {donation.message}
+                          </p>
+                          {currentUserId === donation.user_id && (
+                            <button
+                              onClick={() =>
+                                handleDeleteDonationMessage(donation.id)
+                              }
+                              className="text-xs text-rose-500 hover:text-rose-700 font-medium py-1 px-2 rounded bg-rose-100 hover:bg-rose-200 transition-colors"
+                              title="Hapus pesan"
+                            >
+                              Hapus
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      {!donation.message && (
+                        <p className="text-neutral-400 text-sm italic">
+                          Tidak ada pesan.
+                        </p>
+                      )}
+                      <p className="text-xs text-neutral-400 mt-1 text-right">
+                        {new Date(donation.created_at).toLocaleString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* END of new code addition */}
+          </div>{" "}
+          {/* End of lg:col-span-2 */}
+          {/* Right Column: Donation Progress & Form */}
+          <div className="lg:col-span-1">
+            {/* ... (existing right column content: progress bar, donation form, etc.) ... */}
 
             {/* Right Column: Donation Progress & Form */}
             <div className="lg:col-span-1">
