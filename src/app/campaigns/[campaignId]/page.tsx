@@ -93,7 +93,7 @@ export default function CampaignDetailPage() {
       const token = localStorage.getItem("token");
       if (!token) {
         setDonationError("Sesi Anda telah berakhir. Silakan login kembali.");
-        router.push("/login"); // Redirect to login
+        router.push("/auth/login"); // Redirect to login
         return;
       }
 

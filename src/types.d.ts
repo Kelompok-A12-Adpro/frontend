@@ -37,3 +37,12 @@ export interface UpdateCampaignRequest {
   end_date?: string;
   image_url?: string;
 }
+
+export interface NotificationItem {
+  id: number;
+  title: string;
+  content: string;
+  created_at: string; // ISO timestamp as string
+  target_type: "NewCampaign" | string; // If you have more possible values, you can expand this union
+  marked_as_read: boolean;
+}

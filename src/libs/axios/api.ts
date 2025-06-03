@@ -43,11 +43,12 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // If refresh fails, redirect to login
         // Clear tokens
-        localStorage.removeItem("token");
+        document.cookie =
+          "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         localStorage.removeItem("token");
 
         // Redirect to login page
-        window.location.href = "/login";
+        window.location.href = "/auth/login";
         return Promise.reject(refreshError);
       }
     }
@@ -97,11 +98,12 @@ serviceApi.interceptors.response.use(
       } catch (refreshError) {
         // If refresh fails, redirect to login
         // Clear tokens
-        localStorage.removeItem("token");
+        document.cookie =
+          "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         localStorage.removeItem("token");
 
         // Redirect to login page
-        window.location.href = "/login";
+        window.location.href = "/auth/login";
         return Promise.reject(refreshError);
       }
     }

@@ -1,27 +1,84 @@
 "use client";
 
-import React, { useState } from "react";
-import { User, DollarSign, Heart, LogOut, Menu, X, Target } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  User,
+  DollarSign,
+  Heart,
+  LogOut,
+  Menu,
+  X,
+  Target,
+  Bell,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { logout } from "@/lib/auth";
+import { NotificationItem } from "@/types";
+import { serviceApi } from "@/libs/axios/api";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const router = useRouter();
 
   const navItems = [
     { name: "Profile", icon: User, href: "/profile" },
     { name: "Campaigns", icon: Target, href: "/campaigns" },
     { name: "Wallet", icon: DollarSign, href: "/wallet" },
-    { name: "Donations", icon: Heart, href: "/donations" },
   ];
+
+  // Fetch notifications to get unread count
+  const fetchNotifications = async () => {
+    try {
+      const response = await serviceApi.get("/api/notifications/");
+      if (response.data.success && response.data.data) {
+        // Count notifications that are not marked as read
+        const unreadCount = response.data.data.filter(
+          (notification: NotificationItem) => !notification.marked_as_read,
+        ).length;
+        setUnreadNotifications(unreadCount);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+
+    // Optional: Set up polling to refresh notification count every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     logout();
     router.push("/auth/login");
   };
+
+  // Custom notification item component
+  const NotificationItem = ({ isMobile = false }) => (
+    <Link
+      href="/notification"
+      className={`flex items-center ${isMobile ? "space-x-3 px-3 py-3" : "space-x-2 px-3 py-2"} rounded-lg text-${isMobile ? "base" : "sm"} font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 relative`}
+      onClick={isMobile ? () => setIsMobileMenuOpen(false) : undefined}
+    >
+      <div className="relative">
+        <Bell
+          className={`w-${isMobile ? "5" : "4"} h-${isMobile ? "5" : "4"}`}
+        />
+        {unreadNotifications > 0 && (
+          <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+            {unreadNotifications > 99 ? "99+" : unreadNotifications}
+          </div>
+        )}
+      </div>
+      <span>Notification</span>
+    </Link>
+  );
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-neutral-200">
@@ -56,6 +113,7 @@ const Navbar = () => {
                   <span>{item.name}</span>
                 </Link>
               ))}
+              <NotificationItem />
             </div>
           </div>
 
@@ -100,6 +158,7 @@ const Navbar = () => {
                   <span>{item.name}</span>
                 </Link>
               ))}
+              <NotificationItem isMobile={true} />
               <button
                 onClick={() => {
                   handleLogout();
